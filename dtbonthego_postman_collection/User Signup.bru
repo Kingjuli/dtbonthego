@@ -1,0 +1,38 @@
+meta {
+  name: User Signup
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8081/api/v1/auth/signup?firstName=Julius&lastName=Muruthi&email=juliusmuruthi@gmail.com
+  body: json
+  auth: none
+}
+
+params:query {
+  firstName: Julius
+  lastName: Muruthi
+  email: juliusmuruthi@gmail.com
+}
+
+body:json {
+  {
+    "firstName": "Julius",
+    "lastName": "Muruthi",
+    "username": "jmuruthi",
+    "email": "juliusmuruthi@gmail.com",
+    "password": "S3rvic3s@123"
+  }
+}
+
+body:form-urlencoded {
+  firstName: 
+}
+
+body:multipart-form {
+  firstName: Julius
+  lastName: Muruthi
+  email: juliusmuruthi@gmail.com
+  : 
+}

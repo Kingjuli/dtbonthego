@@ -1,0 +1,19 @@
+meta {
+  name: User Get My Profile
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8081/api/v1/profile/me
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqbXVydXRoaSIsImlhdCI6MTc0NjAyNzM1MCwiZXhwIjoxNzQ2MTEzNzUwfQ.l0lra00D6FVL-bectgxq87HLDO0PJJuqQnqfcPNUkF4
+}
+
+body:json {
+   
+}

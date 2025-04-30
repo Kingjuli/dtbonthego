@@ -1,0 +1,5 @@
+/profile-service/target/
+nb-configuration.xml
+
+profile-service/src/main/resources/application.yml
+
