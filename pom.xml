@@ -19,6 +19,7 @@
     <description>A multi-module banking platform with microservices architecture</description>
 
     <modules>
+        <module>common-library</module>
         <module>profile-service</module>
         <module>store-of-value-service</module>
         <module>payment-service</module>

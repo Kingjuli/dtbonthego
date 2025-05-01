@@ -1,0 +1,22 @@
+meta {
+  name: User Transaction Deposit
+  type: http
+  seq: 9
+}
+
+post {
+  url: http://localhost:8083/api/v1/transaction/deposit
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzQ2MTM4MTIwLCJyb2xlcyI6WyJST0xFX0NVU1RPTUVSIl0sImV4cCI6MTc0NjIyNDUyMH0.0kvIP69gfnjUkr_8G0RC4pj5GUDkASpGXMKqkIBmAiM
+}
+
+body:json {
+   {
+     "accountNumber" : "105626473484",
+     "amount": 21
+   }
+}

@@ -31,7 +31,7 @@ spring:
         max-interval: 10000
 
 jwt:
-  secret: ${JWT_SECRET:3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8b78d86cc2dce1637bd}
+  secret: ${JWT_SECRET:M2NmYTc2ZWYxNDkzN2MxYzBlYTUxOWY4ZmMwNTdhODBmY2QwNGE3NDIwZjhlOGI3OGQ4NmNjMmRjZTE2MzdiZA==}
   expiration: 86400000 # 24 hours in milliseconds
 
 springdoc:

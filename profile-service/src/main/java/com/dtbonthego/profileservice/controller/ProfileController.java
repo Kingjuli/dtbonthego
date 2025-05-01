@@ -5,11 +5,11 @@ import com.dtbonthego.profileservice.payload.request.ChangePasswordRequest;
 import com.dtbonthego.profileservice.payload.request.UpdateProfileRequest;
 import com.dtbonthego.profileservice.payload.response.MessageResponse;
 import com.dtbonthego.profileservice.repository.UserRepository;
-import com.dtbonthego.profileservice.security.services.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/profile")
 @Tag(name = "Profile", description = "User Profile management API")
 @SecurityRequirement(name = "Bearer Authentication")
+@Slf4j
 public class ProfileController {
 
     @Autowired
@@ -44,9 +45,8 @@ public class ProfileController {
     @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     @Operation(summary = "Get the current user's profile")
     public ResponseEntity<?> getCurrentUserProfile() {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
-        User user = userRepository.findById(userDetails.getId())
+        Long userId = Long.valueOf(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Error: User not found."));
         
         // Remove sensitive information before returning
@@ -67,9 +67,9 @@ public class ProfileController {
     @Operation(summary = "Update the current user's profile (name, email, phone only)")
     public ResponseEntity<?> updateCurrentUserProfile(@Valid @RequestBody UpdateProfileRequest updateRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        Long userId = Long.valueOf(authentication.getPrincipal().toString());
         
-        User user = userRepository.findById(userDetails.getId())
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Error: User not found."));
         
         // Update user information if provided
@@ -113,9 +113,9 @@ public class ProfileController {
     @Operation(summary = "Change the current user's password")
     public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest passwordRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        Long userId = Long.valueOf(authentication.getPrincipal().toString());
         
-        User user = userRepository.findById(userDetails.getId())
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Error: User not found."));
         
         // Verify the current password

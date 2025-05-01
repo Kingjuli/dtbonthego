@@ -1,0 +1,24 @@
+meta {
+  name: Account Creation
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:8082/api/v1/admin/account
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYWRtaW5qIiwiaWF0IjoxNzQ2MDMzOTM3LCJleHAiOjE3NDYxMjAzMzd9.ON1-3dEIiYYOb7HI1R7-sKAzuEIuMRZNKjtjLbvwPFk
+}
+
+body:json {
+   {
+     "accountName" : "Julius Savings",
+     "accountType": "CURRENT",
+     "profileId": 1,
+     "initialDeposit": 100
+   }
+}

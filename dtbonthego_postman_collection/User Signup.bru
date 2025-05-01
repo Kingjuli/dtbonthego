@@ -5,24 +5,27 @@ meta {
 }
 
 post {
-  url: http://localhost:8081/api/v1/auth/signup?firstName=Julius&lastName=Muruthi&email=juliusmuruthi@gmail.com
+  url: http://localhost:8081/api/v1/auth/signup?firstName=Julius&lastName=Admin&email=juliusgitonga56@gmail.com
   body: json
   auth: none
 }
 
 params:query {
   firstName: Julius
-  lastName: Muruthi
-  email: juliusmuruthi@gmail.com
+  lastName: Admin
+  email: juliusgitonga56@gmail.com
 }
 
 body:json {
   {
     "firstName": "Julius",
-    "lastName": "Muruthi",
-    "username": "jmuruthi",
-    "email": "juliusmuruthi@gmail.com",
-    "password": "S3rvic3s@123"
+    "lastName": "Admin",
+    "username": "jadminj",
+    "email": "juliusadmin@gmail.com",
+    "password": "S3rvic3s@123",
+    "roles": [
+      "ADMIN"
+    ]
   }
 }
 

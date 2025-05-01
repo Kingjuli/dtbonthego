@@ -1,0 +1,23 @@
+meta {
+  name: User Account Get Transactions
+  type: http
+  seq: 10
+}
+
+get {
+  url: http://localhost:8082/api/v1/transaction/account/105626473484
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzQ2MTM4MTIwLCJyb2xlcyI6WyJST0xFX0NVU1RPTUVSIl0sImV4cCI6MTc0NjIyNDUyMH0.0kvIP69gfnjUkr_8G0RC4pj5GUDkASpGXMKqkIBmAiM
+}
+
+body:json {
+   {
+     "accountNumber" : "105626473484",
+     "desacription": "Buy a mug",
+     "amount": 21
+   }
+}

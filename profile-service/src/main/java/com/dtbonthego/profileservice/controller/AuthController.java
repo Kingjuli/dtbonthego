@@ -9,7 +9,7 @@ import com.dtbonthego.profileservice.payload.response.JwtResponse;
 import com.dtbonthego.profileservice.payload.response.MessageResponse;
 import com.dtbonthego.profileservice.repository.RoleRepository;
 import com.dtbonthego.profileservice.repository.UserRepository;
-import com.dtbonthego.profileservice.security.jwt.JwtUtils;
+import com.dtbonthego.common.security.jwt.JwtUtils;
 import com.dtbonthego.profileservice.security.services.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/auth")
 @Tag(name = "Authentication", description = "Authentication API")
 public class AuthController {
+
     @Autowired
     AuthenticationManager authenticationManager;
 
@@ -53,9 +54,10 @@ public class AuthController {
 
     /**
      * Authenticates a user and generates a JWT token.
-     * 
+     *
      * @param loginRequest the login credentials
-     * @return ResponseEntity containing JWT and user info if authentication successful
+     * @return ResponseEntity containing JWT and user info if authentication
+     * successful
      */
     @PostMapping("/signin")
     @Operation(summary = "Authenticate user and generate JWT token")
@@ -64,12 +66,15 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
+
+        Authentication tokenAuthentication = new UsernamePasswordAuthenticationToken(userDetails.getId(), null, userDetails.getAuthorities());
+
+        String jwt = jwtUtils.generateJwtToken(tokenAuthentication, roles);
 
         return ResponseEntity.ok(new JwtResponse(jwt,
                 userDetails.getId(),
@@ -80,7 +85,7 @@ public class AuthController {
 
     /**
      * Registers a new user in the system.
-     * 
+     *
      * @param signUpRequest the registration information
      * @return ResponseEntity with success message or error
      */
@@ -118,17 +123,18 @@ public class AuthController {
                     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
             roles.add(customerRole);
         } else {
-            strRoles.forEach(role -> {
+            strRoles.forEach((var role) -> {
                 switch (role) {
-                    case "admin":
+                    case "admin" -> {
                         Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(adminRole);
-                        break;
-                    default:
+                    }
+                    default -> {
                         Role customerRole = roleRepository.findByName(ERole.ROLE_CUSTOMER)
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(customerRole);
+                    }
                 }
             });
         }
@@ -138,4 +144,4 @@ public class AuthController {
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
-} 
+}
