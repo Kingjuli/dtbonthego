@@ -1,0 +1,24 @@
+meta {
+  name: Admin Get Accounts
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://localhost:8082/api/v1/admin/account
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYWRtaW5qIiwiaWF0IjoxNzQ2MDQ1MDYyLCJyb2xlcyI6WyJST0xFX0FETUlOIl0sImV4cCI6MTc0NjEzMTQ2Mn0.aZ8dJ9n4zHTTx5fn2gH_l9thTIj9QoPuRb_NvdZcjuM
+}
+
+body:json {
+   {
+     "accountName" : "Julius Savings",
+     "accountType": "CURRENT",
+     "profileId": 1,
+     "initialDeposit": 100
+   }
+}

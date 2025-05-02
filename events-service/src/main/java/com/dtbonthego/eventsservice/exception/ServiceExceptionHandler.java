@@ -11,12 +11,12 @@ import org.springframework.web.context.request.WebRequest;
 import java.time.LocalDateTime;
 
 /**
- * Global exception handler for the Events Service.
+ * Exception handler for the Events Service.
  * Extends the common GlobalExceptionHandler to handle service-specific exceptions.
  */
 @RestControllerAdvice
 @Slf4j
-public class GlobalExceptionHandler extends com.dtbonthego.common.exception.GlobalExceptionHandler {
+public class ServiceExceptionHandler extends com.dtbonthego.common.exception.GlobalExceptionHandler {
 
     /**
      * Handles service-specific exceptions.

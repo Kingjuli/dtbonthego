@@ -4,10 +4,13 @@ import com.dtbonthego.paymentservice.exception.AccountNotFoundException;
 import com.dtbonthego.paymentservice.exception.InsufficientFundsException;
 import com.dtbonthego.paymentservice.exception.InvalidTransactionException;
 import com.dtbonthego.paymentservice.exception.TransactionProcessingException;
+import com.dtbonthego.paymentservice.model.dto.AccountDTO;
+import com.dtbonthego.paymentservice.model.dto.ProfileDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -34,35 +37,38 @@ public class AccountServiceClient {
     @Value("${store-of-value-service.url}")
     private String storeOfValueServiceUrl;
     
+    @Value("${profile-service.url}")
+    private String profileServiceUrl;
+    
     /**
-     * Get account information to verify it exists and is active
+     * Get account information as an AccountDTO object
      * 
      * @param accountNumber the account number
      * @param token the authentication token
-     * @return account information as a Map
+     * @return AccountDTO object
      * @throws AccountNotFoundException if the account is not found
      * @throws InvalidTransactionException if the account is not active
      */
-    public Map<String, Object> getAccount(String accountNumber, String token) {
+    public AccountDTO getAccount(String accountNumber, String token) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", token);
             HttpEntity<?> entity = new HttpEntity<>(headers);
-            
-            ResponseEntity<Map> response = restTemplate.exchange(
+            ResponseEntity<AccountDTO> response = restTemplate.exchange(
                     storeOfValueServiceUrl + "/account/number/" + accountNumber,
                     HttpMethod.GET,
                     entity,
-                    Map.class);
+                    AccountDTO.class);
             
-            Map<String, Object> accountInfo = response.getBody();
-            
+            AccountDTO account = response.getBody();
+                        logger.info("Acc {}", account);
+
             // Check if the account is active
-            if (accountInfo != null && !"ACTIVE".equals(accountInfo.get("status"))) {
+            if (account != null && !"ACTIVE".equals(account.getStatus())) {
                 throw InvalidTransactionException.accountNotActive(accountNumber);
             }
             
-            return accountInfo;
+            return account;
         } catch (HttpClientErrorException.NotFound e) {
             logger.error("Account not found: {}", accountNumber, e);
             throw new AccountNotFoundException(accountNumber);
@@ -115,6 +121,33 @@ public class AccountServiceClient {
         } catch (Exception e) {
             logger.error("Error updating balance: {}", accountNumber, e);
             throw new TransactionProcessingException("Error updating account balance", e);
+        }
+    }
+    
+    /**
+     * Get profile information by ID
+     * 
+     * @param profileId the profile ID
+     * @param token the authentication token
+     * @return ProfileDTO object
+     * @throws TransactionProcessingException if there's an error fetching the profile
+     */
+    public ProfileDTO getMyProfile(String token) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", token);
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+            
+            ResponseEntity<ProfileDTO> response = restTemplate.exchange(
+                    profileServiceUrl + "/profile/me",
+                    HttpMethod.GET,
+                    entity,
+                    ProfileDTO.class);
+            
+            return response.getBody();
+        } catch (Exception e) {
+            logger.error("Error getting profile: {}", e);
+            throw new TransactionProcessingException("Error getting profile information", e);
         }
     }
 } 

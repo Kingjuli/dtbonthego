@@ -7,6 +7,7 @@ import com.dtbonthego.paymentservice.model.TransactionType;
 import com.dtbonthego.paymentservice.model.dto.*;
 import com.dtbonthego.paymentservice.repository.TransactionRepository;
 import com.dtbonthego.paymentservice.service.AccountServiceClient;
+import com.dtbonthego.paymentservice.service.KafkaProducerService;
 import com.dtbonthego.paymentservice.service.TransactionService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -40,6 +41,9 @@ public class TransactionServiceImpl implements TransactionService {
     
     @Autowired
     private AccountServiceClient accountServiceClient;
+    
+    @Autowired
+    private KafkaProducerService kafkaProducerService;
     
     /**
      * {@inheritDoc}
@@ -82,6 +86,9 @@ public class TransactionServiceImpl implements TransactionService {
             // Update transaction status to completed
             transaction.setStatus(TransactionStatus.COMPLETED);
             transaction = transactionRepository.save(transaction);
+            
+            // Publish transaction event for notification
+            publishTransactionEvent(transaction);
             
             return TransactionResponse.builder()
                     .referenceNumber(transaction.getReferenceNumber())
@@ -149,6 +156,9 @@ public class TransactionServiceImpl implements TransactionService {
             transaction.setStatus(TransactionStatus.COMPLETED);
             transaction = transactionRepository.save(transaction);
             
+            // Publish transaction event for notification
+            publishTransactionEvent(transaction);
+            
             return TransactionResponse.builder()
                     .referenceNumber(transaction.getReferenceNumber())
                     .status(TransactionStatus.COMPLETED)
@@ -195,8 +205,8 @@ public class TransactionServiceImpl implements TransactionService {
         String token = getCurrentAuthToken();
         
         // Verify both accounts exist and are active
-        accountServiceClient.getAccount(request.getSourceAccountNumber(), token);
-        accountServiceClient.getAccount(request.getDestinationAccountNumber(), token);
+        AccountDTO sourceAccountDTO = accountServiceClient.getAccount(request.getSourceAccountNumber(), token);
+        AccountDTO destinationAccountDTO = accountServiceClient.getAccount(request.getDestinationAccountNumber(), token);
         
         // Create a new transaction record
         String referenceNumber = generateReferenceNumber();
@@ -214,15 +224,18 @@ public class TransactionServiceImpl implements TransactionService {
         transaction = transactionRepository.save(transaction);
         
         try {
-            // Debit the source account
+            // Withdraw from source account
             accountServiceClient.updateBalance(request.getSourceAccountNumber(), request.getAmount().negate(), token);
             
-            // Credit the destination account
+            // Deposit to destination account
             accountServiceClient.updateBalance(request.getDestinationAccountNumber(), request.getAmount(), token);
             
             // Update transaction status to completed
             transaction.setStatus(TransactionStatus.COMPLETED);
             transaction = transactionRepository.save(transaction);
+            
+            // Publish transaction event for notification
+            publishTransactionEvent(transaction, sourceAccountDTO, destinationAccountDTO);
             
             return TransactionResponse.builder()
                     .referenceNumber(transaction.getReferenceNumber())
@@ -235,23 +248,6 @@ public class TransactionServiceImpl implements TransactionService {
             transaction.setStatus(TransactionStatus.FAILED);
             transaction.setErrorMessage(e.getMessage());
             transactionRepository.save(transaction);
-            
-            // If an error occurs after debiting the source account but before crediting the destination,
-            // we need to refund the source account to ensure atomicity
-            if (transaction.getStatus() == TransactionStatus.PROCESSING && 
-                    e.getMessage() != null && 
-                    !e.getMessage().contains("insufficient")) {
-                try {
-                    // Refund the source account
-                    accountServiceClient.updateBalance(request.getSourceAccountNumber(), request.getAmount(), token);
-                    
-                    logger.info("Refunded source account {} after failed transfer", request.getSourceAccountNumber());
-                } catch (Exception refundException) {
-                    logger.error("Failed to refund source account {} after failed transfer: {}",
-                            request.getSourceAccountNumber(), refundException.getMessage());
-                    // In a real system, this would be sent to a queue for manual review or retry
-                }
-            }
             
             // Rethrow the exception
             if (e instanceof AccountNotFoundException || 
@@ -288,11 +284,10 @@ public class TransactionServiceImpl implements TransactionService {
         String token = getCurrentAuthToken();
         
         // Verify the account exists and belongs to the user
-        Map<String, Object> accountInfo = accountServiceClient.getAccount(accountNumber, token);
+        AccountDTO account = accountServiceClient.getAccount(accountNumber, token);
         
         // Verify the account belongs to the user
-        Long accountProfileId = Long.valueOf(accountInfo.get("profileId").toString());
-        if (!profileId.equals(accountProfileId)) {
+        if (!profileId.equals(account.getProfileId())) {
             throw SecurityViolationException.unauthorizedAccountAccess(accountNumber, profileId);
         }
         
@@ -374,6 +369,79 @@ public class TransactionServiceImpl implements TransactionService {
         } catch (Exception e) {
             logger.error("Failed to get authentication token", e);
             throw new SecurityViolationException("Could not get authentication token");
+        }
+    }
+    
+    /**
+     * Publishes a transaction event for notification purposes.
+     * 
+     * @param transaction the completed transaction
+     * @param account the account associated with the transaction
+     */
+    private void publishTransactionEvent(Transaction transaction) {
+        try {
+            // Get profile details from account service
+            String token = getCurrentAuthToken();
+            ProfileDTO profile = accountServiceClient.getMyProfile(token);
+            
+            TransactionEvent event = TransactionEvent.builder()
+                    .transactionId(transaction.getId())
+                    .profileId(transaction.getInitiatedByProfileId())
+                    .sourceAccountNumber(transaction.getSourceAccountNumber())
+                    .destinationAccountNumber(transaction.getDestinationAccountNumber())
+                    .amount(transaction.getAmount())
+                    .transactionType(transaction.getType().name())
+                    .status(transaction.getStatus().name())
+                    .timestamp(transaction.getUpdatedAt())
+                    .description(transaction.getDescription())
+                    .customerEmail(profile.getEmail())
+                    .customerPhoneNumber(profile.getPhoneNumber())
+                    .customerName(profile.getFirstName() + " " + profile.getLastName())
+                    .build();
+            
+            kafkaProducerService.publishTransactionEvent(event);
+        } catch (Exception e) {
+            logger.error("Failed to publish transaction event: {}", e.getMessage(), e);
+            // Don't rethrow to prevent affecting the transaction
+        }
+    }
+    
+    /**
+     * Publishes a transaction event for notification purposes for transfers.
+     * 
+     * @param transaction the completed transaction
+     * @param sourceAccount the source account
+     * @param destinationAccount the destination account
+     */
+    private void publishTransactionEvent(Transaction transaction, AccountDTO sourceAccount, AccountDTO destinationAccount) {
+        // Publish event for source account owner
+        publishTransactionEvent(transaction);
+        
+        // If destination account belongs to a different user, publish for them too
+        if (!sourceAccount.getProfileId().equals(destinationAccount.getProfileId())) {
+            try {
+                String token = getCurrentAuthToken();
+                ProfileDTO profile = accountServiceClient.getMyProfile(token);
+                
+                TransactionEvent event = TransactionEvent.builder()
+                        .transactionId(transaction.getId())
+                        .profileId(destinationAccount.getProfileId())
+                        .sourceAccountNumber(transaction.getSourceAccountNumber())
+                        .destinationAccountNumber(transaction.getDestinationAccountNumber())
+                        .amount(transaction.getAmount())
+                        .transactionType("TRANSFER_RECEIVED") // Special type for recipient
+                        .status(transaction.getStatus().name())
+                        .timestamp(transaction.getUpdatedAt())
+                        .description(transaction.getDescription())
+                        .customerEmail(profile.getEmail())
+                        .customerPhoneNumber(profile.getPhoneNumber())
+                        .customerName(profile.getFirstName() + " " + profile.getLastName())
+                        .build();
+                
+                kafkaProducerService.publishTransactionEvent(event);
+            } catch (Exception e) {
+                logger.error("Failed to publish transaction event for destination account: {}", e.getMessage(), e);
+            }
         }
     }
 } 

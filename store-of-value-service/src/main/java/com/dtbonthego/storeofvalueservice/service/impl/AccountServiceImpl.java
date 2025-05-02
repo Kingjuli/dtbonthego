@@ -4,7 +4,6 @@ import com.dtbonthego.common.exception.ResourceNotFoundException;
 import com.dtbonthego.storeofvalueservice.exception.InvalidAccountOperationException;
 import com.dtbonthego.storeofvalueservice.model.Account;
 import com.dtbonthego.storeofvalueservice.model.AccountStatus;
-import com.dtbonthego.storeofvalueservice.model.AccountType;
 import com.dtbonthego.storeofvalueservice.model.dto.AccountDTO;
 import com.dtbonthego.storeofvalueservice.model.dto.CreateAccountRequest;
 import com.dtbonthego.storeofvalueservice.model.dto.UpdateAccountRequest;
