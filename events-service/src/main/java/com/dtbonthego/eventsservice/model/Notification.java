@@ -1,6 +1,5 @@
 package com.dtbonthego.eventsservice.model;
 
-import com.dtbonthego.common.model.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Notification extends BaseEntity {
+public class Notification {
 
     /**
      * The ID of the notification
@@ -76,16 +75,31 @@ public class Notification extends BaseEntity {
      */
     private LocalDateTime sentAt;
     
+    /**
+     * Timestamp of when the entity was created
+     */
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    /**
+     * Timestamp of when the entity was last updated
+     */
+    @Column
+    private LocalDateTime updatedAt;
+
+    /**
+     * Sets creation timestamp upon entity creation
+     */
     @PrePersist
     protected void onCreate() {
-        super.onCreate();
-        if (status == null) {
-            status = NotificationStatus.PENDING;
-        }
+        createdAt = LocalDateTime.now();
     }
-    
+
+    /**
+     * Updates the update timestamp upon entity modification
+     */
     @PreUpdate
     protected void onUpdate() {
-        super.onUpdate();
+        updatedAt = LocalDateTime.now();
     }
 }

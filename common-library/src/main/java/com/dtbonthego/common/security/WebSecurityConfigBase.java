@@ -62,9 +62,6 @@ public class WebSecurityConfigBase {
                     // Profile service endpoints
                     .requestMatchers("/auth/**").permitAll()
                     
-                    // Payment service endpoints
-                    .requestMatchers("/webhooks/**").permitAll()
-                    
                     // Require authentication for all other endpoints
                     .anyRequest().authenticated()
             );

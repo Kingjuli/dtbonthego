@@ -19,7 +19,6 @@
     <description>A multi-module banking platform with microservices architecture</description>
 
     <modules>
-        <module>common-library</module>
         <module>profile-service</module>
         <module>store-of-value-service</module>
         <module>payment-service</module>
@@ -32,7 +31,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-cloud.version>2023.0.0</spring-cloud.version>
-        <springdoc-openapi.version>2.2.0</springdoc-openapi.version>
+        <springdoc-openapi.version>2.7.0</springdoc-openapi.version>
         <jsonwebtoken.version>0.11.5</jsonwebtoken.version>
         <postgresql.version>42.6.0</postgresql.version>
         <kafka-clients.version>3.4.0</kafka-clients.version>
