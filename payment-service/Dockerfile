@@ -14,4 +14,4 @@ USER spring:spring
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
 # Expose the application and management ports
-EXPOSE 8081 9091
+EXPOSE 8083 9093

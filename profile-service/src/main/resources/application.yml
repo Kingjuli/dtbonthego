@@ -7,7 +7,7 @@ spring:
   application:
     name: profile-service
   datasource:
-    url: jdbc:postgresql://postgres:5432/profile_db
+    url: jdbc:postgresql://localhost:5432/dtbonthego
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -19,33 +19,27 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show-sql: false
-  config:
-    import: optional:configserver:http://config-server:8888
-  cloud:
-    config:
-      fail-fast: false
-      retry:
-        max-attempts: 20
-        initial-interval: 1500
-        multiplier: 1.5
-        max-interval: 10000
 
 jwt:
   secret: ${JWT_SECRET:M2NmYTc2ZWYxNDkzN2MxYzBlYTUxOWY4ZmMwNTdhODBmY2QwNGE3NDIwZjhlOGI3OGQ4NmNjMmRjZTE2MzdiZA==}
-  expiration: 86400000 # 24 hours in milliseconds
-
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    operationsSorter: method
+  expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
 
 management:
+  server:
+    port: 9091
   endpoints:
     web:
       exposure:
         include: health,info,metrics
   endpoint:
     health:
-      show-details: when_authorized 
+      show-details: always 
+      
+# Logging configuration
+logging:
+  level:
+    root: INFO
+    com.dtbonthego: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.hibernate: INFO

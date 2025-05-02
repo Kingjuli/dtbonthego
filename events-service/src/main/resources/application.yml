@@ -1,0 +1,67 @@
+server:
+  port: 8084
+  servlet:
+    context-path: /api/v1
+
+spring:
+  application:
+    name: events-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/dtbonthego
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: false
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: events-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.dtbonthego.paymentservice.model.dto,com.dtbonthego.eventsservice.model.dto
+    producer:
+      client-id: events-service
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+notification:
+  email:
+    enabled: true
+    from: ${EMAIL_SENDER:noreply@dtbonthego.com}
+  sms:
+    enabled: true
+    sender: ${SMS_SENDER:DTB-ON-THE-GO}
+
+jwt:
+  secret: ${JWT_SECRET:M2NmYTc2ZWYxNDkzN2MxYzBlYTUxOWY4ZmMwNTdhODBmY2QwNGE3NDIwZjhlOGI3OGQ4NmNjMmRjZTE2MzdiZA==}
+  expiration: 86400000 # 24 hours in milliseconds
+
+management:
+  server:
+    port: 9094
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always 
+      
+logging:
+  level:
+    root: INFO
+    com.dtbonthego: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.hibernate: INFO
+    org.springdoc: DEBUG
+    

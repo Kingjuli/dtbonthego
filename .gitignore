@@ -3,4 +3,3 @@ nb-configuration.xml
 **/**/nbactions.xml
 
 /**/target/
-**/**/application.yml

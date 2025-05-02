@@ -16,282 +16,145 @@ DTB On The Go is a modern, secure banking platform designed to provide essential
 - Balance inquiries and transactions
 - Role-based access control
 
-**Target Users:**
-- Financial institutions looking to implement digital banking solutions
-- Banking customers requiring secure access to their accounts
-- Developers interested in a reference implementation of a banking platform
+## Architecture & Services
 
-## Architecture & Design
+The application consists of the following microservices:
 
-### Microservices Architecture
+1. **Profile Service (Port 8081)**: Handles user authentication, registration, and profile management
+2. **Store of Value Service (Port 8082)**: Manages bank accounts and balances
+3. **Payment Service (Port 8083)**: Processes transactions (deposits, withdrawals, transfers)
+4. **Events Service (Port 8084)**: Handles event processing and notifications
 
-DTB On The Go implements a microservices architecture, allowing independent deployment, scaling, and maintenance of each service component:
+> **Note:** A comprehensive system architecture document is available in the `design_docs` directory. This document details the technical design, security implementation, data consistency strategies, scalability approach, and disaster recovery planning for the DTB On The Go platform.
 
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│                 │     │                 │     │                 │
-│  Profile        │     │  Store of Value │     │  Future         │
-│  Service        │◄────►  Service        │◄────►  Services       │
-│                 │     │                 │     │                 │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-       ▲                        ▲                        ▲
-       │                        │                        │
-       │                        │                        │
-       │                        │                        │
-       ▼                        ▼                        ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                                                                 │
-│                       API Gateway Layer                         │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-                               ▲
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                                                                 │
-│                       Client Applications                       │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Design Principles
-
-1. **Service Independence**: Each service is independently deployable with its own database
-2. **RESTful Communication**: Services communicate via RESTful APIs
-3. **Security First**: Comprehensive security with JWT authentication and RBAC
-4. **Database per Service**: Each microservice manages its own data store
-5. **API Documentation**: All endpoints are documented using OpenAPI/Swagger
-6. **Common Library**: Shared code and functionality through a common library
-
-### Component Interaction
-
-- **Profile Service**: Manages user authentication, authorization, and profile information
-- **Store of Value Service**: Handles account creation, management, and balance operations
-- **Payment Service**: Processes payment transactions and integrates with external payment systems
-- **Events Service**: Handles notifications and events for customer transactions
-- **Common Library**: Provides shared functionality across all services
-
-## Security Architecture
-
-The DTB On The Go platform implements a robust security architecture using Spring Security and JWT (JSON Web Tokens) for authentication and authorization.
-
-### Common Security Framework
-
-All microservices share a common security framework implemented in the `common-library` module, which provides:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                   Common Security Library                    │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌─────────────────┐    ┌─────────────────┐                 │
-│  │                 │    │                 │                 │
-│  │  JWT            │    │  Security       │                 │
-│  │  Authentication │    │  Configuration  │                 │
-│  │                 │    │                 │                 │
-│  └─────────────────┘    └─────────────────┘                 │
-│                                                             │
-│  ┌─────────────────┐    ┌─────────────────┐                 │
-│  │                 │    │                 │                 │
-│  │  Exception      │    │  Utility        │                 │
-│  │  Handling       │    │  Classes        │                 │
-│  │                 │    │                 │                 │
-│  └─────────────────┘    └─────────────────┘                 │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Key Security Components
-
-1. **WebSecurityConfigBase**: A centralized security configuration class that:
-   - Configures JWT authentication for all services
-   - Defines common security rules and permitted endpoints
-   - Handles CORS configuration
-   - Supports service-specific authentication providers
-
-2. **JWT Authentication**:
-   - Token-based authentication using JSON Web Tokens
-   - Stateless authentication for better scalability
-   - Token validation and parsing through common components
-
-3. **Authorization**:
-   - Role-based access control (RBAC)
-   - Method-level security with `@PreAuthorize` annotations
-   - Fine-grained permission checks
-
-4. **Exception Handling**:
-   - Centralized exception handling for security-related exceptions
-   - Consistent error responses across all services
-
-### Authentication Flow
-
-1. User authenticates with the Profile Service, providing credentials
-2. Profile Service validates credentials and generates a JWT token
-3. JWT token contains user ID, roles, and other claims
-4. Client includes JWT token in Authorization header for subsequent requests
-5. Each microservice validates the token using the common security framework
-6. If valid, the request proceeds; if invalid, a 401 Unauthorized response is returned
-
-### Security Implementation
-
-The security implementation follows these principles:
-
-1. **DRY (Don't Repeat Yourself)**: Common security code is defined once in the common library
-2. **Defense in Depth**: Multiple layers of security controls
-3. **Least Privilege**: Users only have access to what they need
-4. **Secure by Default**: All endpoints require authentication unless explicitly permitted
-
-## Tech Stack
-
-### Backend
-- **Language**: Java 17
-- **Framework**: Spring Boot 3
-- **Security**: Spring Security with JWT Authentication
-- **Database**: PostgreSQL
-- **ORM**: Spring Data JPA
-- **Build Tool**: Maven
-- **Documentation**: Swagger/OpenAPI 3
-
-### Development Tools
-- **Code Quality**: SonarQube (planned)
-- **Testing**: JUnit 5, Mockito
-- **Code Generation**: Lombok
-- **Version Control**: Git
-
-### Infrastructure (Planned)
-- **Containerization**: Docker
-- **Container Orchestration**: Kubernetes
-- **Service Discovery**: Eureka
-- **API Gateway**: Spring Cloud Gateway
-- **Configuration Management**: Spring Cloud Config
-
-## Installation & Setup Instructions
+## Deployment
 
 ### Prerequisites
-- JDK 17 or higher
-- Maven 3.6+
-- PostgreSQL 14+
-- Git
 
-### Local Development Setup
+- Docker Engine (20.10+)
+- Docker Compose (v2.0+)
+- Maven (3.6+) (for building from source)
+- Git (for cloning the repository)
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/dtbonthego.git
-   cd dtbonthego
-   ```
+### Deployment Instructions
 
-2. **Configure PostgreSQL**
-   ```bash
-   # Create databases for each service
-   createdb profile_service_db
-   createdb store_of_value_db
-   
-   # Default credentials (customize in application.yml):
-   # Username: postgres
-   # Password: postgres
-   ```
+To deploy the entire application, simply run the provided deployment script:
 
-3. **Build all services**
-   ```bash
-   mvn clean install
-   ```
+```bash
+# Run the deployment script
+./deploy.sh
+```
 
-4. **Run the Profile Service**
-   ```bash
-   cd profile-service
-   mvn spring-boot:run
-   ```
+This interactive script will:
+1. Check prerequisites (Docker and Docker Compose)
+2. Offer to create a default `.env` file with environment variables
+3. Ask if you want to build Docker images
+4. Ask if you want to clean up existing containers
+5. Start all services using Docker Compose
+6. Display access URLs and health check endpoints
 
-5. **Run the Store of Value Service**
-   ```bash
-   cd ../store-of-value-service
-   mvn spring-boot:run
-   ```
+### Environment Configuration
 
-### Configuration
+The deployment script will offer to create a `.env` file with default environment values. 
 
-Each service has its own `application.yml` file for configuration:
+## Common Operations
 
-- **Profile Service**: `profile-service/src/main/resources/application.yml`
-- **Store of Value Service**: `store-of-value-service/src/main/resources/application.yml`
+### Viewing Service Status
 
-Key configuration parameters include:
+```bash
+docker-compose ps
+```
 
-- Database connection details
-- Server port settings
-- JWT secret and expiration time
-- Logging levels
+### Stopping the Services
 
-## Usage
+```bash
+docker-compose down
+```
+
+To stop and remove volumes as well:
+
+```bash
+docker-compose down -v
+```
+
+### Viewing Container Logs
+
+```bash
+docker-compose logs -f [service-name]
+```
+
+Example: `docker-compose logs -f profile-service`
+
+### Accessing the Database
+
+```bash
+docker exec -it dtbonthego-postgres psql -U postgres -d dtbonthego
+```
+
+## API Usage
 
 ### Authentication
 
-1. **Register a new user**
-   ```http
-   POST /api/v1/auth/register
-   Content-Type: application/json
-   
-   {
-     "username": "user@example.com",
-     "password": "securePassword123",
-     "firstName": "John",
-     "lastName": "Doe"
-   }
-   ```
+```http
+# Register a new user
+POST /api/v1/auth/register
+Content-Type: application/json
 
-2. **Login to get JWT token**
-   ```http
-   POST /api/v1/auth/login
-   Content-Type: application/json
-   
-   {
-     "username": "user@example.com",
-     "password": "securePassword123"
-   }
-   ```
+{
+  "username": "user@example.com",
+  "password": "securePassword123",
+  "firstName": "John",
+  "lastName": "Doe"
+}
 
-3. **Use the JWT token for authenticated requests**
-   ```http
-   GET /api/v1/profiles/me
-   Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-   ```
+# Login to get JWT token
+POST /api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "user@example.com",
+  "password": "securePassword123"
+}
+```
 
 ### Account Management
 
-1. **Create an account**
-   ```http
-   POST /api/v1/accounts
-   Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-   Content-Type: application/json
-   
-   {
-     "name": "Primary Savings",
-     "type": "SAVINGS",
-     "profileId": "123e4567-e89b-12d3-a456-426614174000"
-   }
-   ```
+```http
+# Create an account (requires authentication)
+POST /api/v1/accounts
+Authorization: Bearer [YOUR_JWT_TOKEN]
+Content-Type: application/json
 
-2. **Get account details**
-   ```http
-   GET /api/v1/accounts/{accountId}
-   Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-   ```
+{
+  "name": "Primary Savings",
+  "type": "SAVINGS",
+  "profileId": "123e4567-e89b-12d3-a456-426614174000"
+}
+```
 
-3. **Update account status**
-   ```http
-   PATCH /api/v1/accounts/{accountId}/status
-   Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-   Content-Type: application/json
-   
-   {
-     "status": "ACTIVE"
-   }
-   ```
+## Troubleshooting
+
+### Service Startup Issues
+
+If services fail to start:
+
+1. Check if the Docker images were built correctly: `docker images dtbonthego/*`
+2. Verify that all required ports are available
+3. Check container logs: `docker-compose logs [service-name]`
+
+### Database Connectivity
+
+If services can't connect to the database:
+
+1. Verify the PostgreSQL container is running: `docker ps | grep postgres`
+2. Check PostgreSQL logs: `docker-compose logs postgres`
+3. Ensure the database URL, username, and password are correct in the environment variables
 
 ### API Documentation
 
 Swagger UI is available for each service at:
 
-- **Profile Service**: `http://localhost:8080/swagger-ui.html`
-- **Store of Value Service**: `http://localhost:8081/swagger-ui.html`
+- **Profile Service**: `http://localhost:8081/swagger-ui.html`
+- **Store of Value Service**: `http://localhost:8082/swagger-ui.html`
+- **Payment Service**: `http://localhost:8083/swagger-ui.html`
+- **Events Service**: `http://localhost:8084/swagger-ui.html` 
