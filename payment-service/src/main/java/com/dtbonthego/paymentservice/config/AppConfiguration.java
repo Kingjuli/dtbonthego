@@ -15,6 +15,8 @@ public class AppConfiguration {
 
     /**
      * Configure a RestTemplate bean for HTTP calls
+     * @param builder
+     * @return 
      */
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {

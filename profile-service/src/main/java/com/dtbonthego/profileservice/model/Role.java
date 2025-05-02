@@ -2,6 +2,7 @@ package com.dtbonthego.profileservice.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
  * Each user can have multiple roles.
  */
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity

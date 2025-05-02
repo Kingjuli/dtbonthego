@@ -1,0 +1,20 @@
+# Test database configuration
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  security:
+    enabled: false
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  main:
+    allow-bean-definition-overriding: true
+
+# Server settings for tests
+server:
+  port: 0 
