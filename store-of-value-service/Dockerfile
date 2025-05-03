@@ -10,8 +10,8 @@ COPY target/*.jar app.jar
 # Set the user to run the application
 USER spring:spring
 
-# Set the entry point
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Set the entry point with fixed heap memory
+ENTRYPOINT ["java", "-Xms512m", "-Xmx512m", "-jar", "app.jar"]
 
 # Expose the application and management ports
 EXPOSE 8082 9095

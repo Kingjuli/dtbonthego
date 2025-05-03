@@ -15,9 +15,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 60s
+      timeout: 60s
+      retries: 10
 
   # Kafka and Zookeeper
   zookeeper:
@@ -30,9 +30,9 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     healthcheck:
       test: ["CMD-SHELL", "echo ruok | nc localhost 2181 || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 60s
+      timeout: 60s
+      retries: 10
 
   kafka:
     image: confluentinc/cp-kafka:7.4.0
@@ -52,9 +52,9 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
     healthcheck:
       test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
-      interval: 10s
-      timeout: 10s
-      retries: 5
+      interval: 60s
+      timeout: 60s
+      retries: 10
 
   # Profile Service
   profile-service:
@@ -74,9 +74,9 @@ services:
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9091/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      interval: 60s
+      timeout: 60s
+      retries: 10
 
   # Store of Value Service
   store-of-value-service:
@@ -97,9 +97,9 @@ services:
       JWT_SECRET: ${JWT_SECRET:-M2NmYTc2ZWYxNDkzN2MxYzBlYTUxOWY4ZmMwNTdhODBmY2QwNGE3NDIwZjhlOGI3OGQ4NmNjMmRjZTE2MzdiZA==}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9095/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      interval: 60s
+      timeout: 60s
+      retries: 10
 
   # Payment Service
   payment-service:
@@ -127,9 +127,9 @@ services:
       PROFILE_SERVICE_URL: ${PROFILE_SERVICE_URL:-http://profile-service:8081/api/v1}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9093/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      interval: 60s
+      timeout: 60s
+      retries: 10
 
   # Events Service
   events-service:
@@ -153,9 +153,9 @@ services:
       SMS_SENDER: ${SMS_SENDER:-DTB-ON-THE-GO}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9094/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      interval: 60s
+      timeout: 60s
+      retries: 10
 
 volumes:
   postgres_data:
